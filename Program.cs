@@ -97,8 +97,11 @@ do
         //finding the category in the database
         Category category = db.Categories.FirstOrDefault(c => c.CategoryId == id)!;
         Console.WriteLine($"{category.CategoryName} - {category.Description}");
+        foreach (Product p in category.Products) //lazy loading.  this is why nothing showed
+        {
+            Console.WriteLine(p.ProductName);
+        }
 
-        
     }
     else if (String.IsNullOrEmpty(choice))
     {
