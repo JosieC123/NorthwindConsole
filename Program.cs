@@ -93,15 +93,13 @@ do
         int id = int.Parse(Console.ReadLine()!);
         Console.Clear();
         logger.Info($"CategoryId {id} selected");
-
-        //finding the category in the database
-        Category category = db.Categories.FirstOrDefault(c => c.CategoryId == id)!;
+        
+        Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
         Console.WriteLine($"{category.CategoryName} - {category.Description}");
-        foreach (Product p in category.Products) //lazy loading.  this is why nothing showed
+        foreach (Product p in category.Products)
         {
-            Console.WriteLine(p.ProductName);
+            Console.WriteLine($"\t{p.ProductName}");
         }
-
     }
     else if (String.IsNullOrEmpty(choice))
     {
