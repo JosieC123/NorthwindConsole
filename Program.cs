@@ -17,6 +17,7 @@ do
 {
     Console.WriteLine("1) Display categories");
     Console.WriteLine("2) Add category");
+    Console.WriteLine("3) Display Category and related products");
     Console.WriteLine("Enter to quit");
     string? choice = Console.ReadLine();
     Console.Clear();
@@ -77,6 +78,27 @@ do
                 logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
             }
         }
+    }
+    else if (choice == "3")
+    {
+        var db = new DataContext();
+        var query = db.Categories.OrderBy(p => p.CategoryId);
+        Console.WriteLine("Select the category whose products you want to display:");
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        foreach (var item in query)
+        {
+            Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
+        }
+        Console.ForegroundColor = ConsoleColor.White;
+        int id = int.Parse(Console.ReadLine()!);
+        Console.Clear();
+        logger.Info($"CategoryId {id} selected");
+
+        //finding the category in the database
+        Category category = db.Categories.FirstOrDefault(c => c.CategoryId == id)!;
+        Console.WriteLine($"{category.CategoryName} - {category.Description}");
+
+        
     }
     else if (String.IsNullOrEmpty(choice))
     {
