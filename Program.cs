@@ -19,6 +19,10 @@ do
     Console.WriteLine("2) Add category");
     Console.WriteLine("3) Display Category and related products");
     Console.WriteLine("4) Display all Categories and their related products");
+    Console.WriteLine("5) Add new record to product");
+    Console.WriteLine("6) Edit record in product");
+    Console.WriteLine("7) Display all records in products");
+    Console.WriteLine("8) Display specific product");
     Console.WriteLine("Enter to quit");
     string? choice = Console.ReadLine();
     Console.Clear();
@@ -114,6 +118,22 @@ do
                 Console.WriteLine($"\t{p.ProductName}");
             }
         }
+    }
+    else if (choice == "5")
+    {
+        //Add new record to product
+    }
+    else if (choice == "6")
+    {
+       // Edit record in product
+    }
+    else if (choice == "7")
+    {
+        //Display record products
+    }
+    else if (choice == "8")
+    {
+       // Display specific product
     }
     else if (String.IsNullOrEmpty(choice))
     {
