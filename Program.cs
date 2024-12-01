@@ -122,10 +122,42 @@ do
     else if (choice == "5")
     {
         //Add new record to product
+        Product product = new();
+        Console.WriteLine("Enter Product Name:");
+        product.ProductName = Console.ReadLine()!;
+
+        ValidationContext context = new ValidationContext(product, null, null);
+        List<ValidationResult> results = new List<ValidationResult>();
+        var isValid = Validator.TryValidateObject(product, context, results, true);
+        if (isValid)
+        {
+            var db = new DataContext();
+            // check for unique name
+            if (db.Products.Any(c => c.ProductName == product.ProductName))
+            {
+                // generate validation error
+                isValid = false;
+                results.Add(new ValidationResult("Name exists", ["ProductName"]));
+            }
+            else
+            {
+                logger.Info("Validation passed");
+                // TODO: save product to db
+                db.AddProduct(product);
+                logger.Info("Product added - {ProductName}", product.ProductName);
+            }
+        }
+        if (!isValid)
+        {
+            foreach (var result in results)
+            {
+                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+            }
+        }
     }
     else if (choice == "6")
     {
-       // Edit record in product
+        // Edit record in product
     }
     else if (choice == "7")
     {
@@ -133,7 +165,7 @@ do
     }
     else if (choice == "8")
     {
-       // Display specific product
+        // Display specific product
     }
     else if (String.IsNullOrEmpty(choice))
     {
