@@ -139,7 +139,7 @@ do
     else if (choice == "6")
     {
         // Edit specific record in product
-        Console.WriteLine("Choose the Product you want to edit:");
+        Console.WriteLine("Enter ID of Product you want to edit:");
         var db = new DataContext();
         var product = GetProduct(db, logger);
         if (product != null)
@@ -155,7 +155,54 @@ do
     }
     else if (choice == "7")
     {
-        //Display record products
+        //Display all records in the Products table (ProductName only) opt all, discontinue, active. Discontinue must stand out
+        Console.WriteLine("1) See all products");
+        Console.WriteLine("2) See discontinued products");
+        Console.WriteLine("3) See active products");
+        string? option = Console.ReadLine();
+
+        if (option == "1")
+        {
+            var db = new DataContext();
+            var products = db.Products.OrderBy(p => p.ProductId).ToList();
+            Console.WriteLine($"{products.Count()} records returned");
+            foreach (var p in products)
+            {
+                if(p.Discontinued == true){
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"{p.ProductName}");
+                }
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"{p.ProductName}");
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        else if (option == "2")
+        {
+            var db = new DataContext();
+            var products = db.Products.Where(p => p.Discontinued == true).OrderBy(p => p.ProductId).ToList();
+            Console.WriteLine($"{products.Count()} records returned");
+            foreach (var p in products)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"{p.ProductName}");
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        else if (option == "3")
+        {
+            var db = new DataContext();
+            var products = db.Products.Where(p => p.Discontinued != true).OrderBy(p => p.ProductId).ToList();
+            Console.WriteLine($"{products.Count()} records returned");
+            foreach (var p in products)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"{p.ProductName}");
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+
     }
     else if (choice == "8")
     {
@@ -173,14 +220,10 @@ logger.Info("Program ended");
 
 
 
+//====================================================================================
+
 static Product? GetProduct(DataContext db, NLog.Logger logger)
 {
-    // display all products
-    var products = db.Products.OrderBy(b => b.ProductId);
-    foreach (Product p in products)
-    {
-        Console.WriteLine($"{p.ProductId}: {p.ProductName}");
-    }
     if (int.TryParse(Console.ReadLine(), out int ProductId))
     {
         Product product = db.Products.FirstOrDefault(p => p.ProductId == ProductId)!;
@@ -209,7 +252,7 @@ static Product? InputProduct(DataContext db, NLog.Logger logger)
     if (isValid)
     {
         // check for unique name
-        if (db.Products.Any(c => c.ProductName == product.ProductName))
+        if (db.Products.Any(p => p.ProductName == product.ProductName))
         {
             // generate validation error
             isValid = false;
