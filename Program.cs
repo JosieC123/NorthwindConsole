@@ -127,10 +127,11 @@ do
             Console.WriteLine("2) Edit record in product table");
             Console.WriteLine("3) Display records in product table");
             Console.WriteLine("4) Display specific product");
+            Console.WriteLine("===================");
             Console.WriteLine("Enter to go back to Main Menu");
             String? choiceProduct = Console.ReadLine();
             Console.Clear();
-            logger.Info("Option {choice} selected", choice);
+            logger.Info("Option {choiceProduct} selected", choiceProduct);
 
             //If presses Enter. break loop and go back to main menu
             if (string.IsNullOrEmpty(choiceProduct))
@@ -171,25 +172,30 @@ do
             else if (choiceProduct == "3")
             {
                 //Display all records in the Products table (ProductName only) opt all, discontinue, active. Discontinue must stand out
-                Console.WriteLine("\n1) See all products");
-                Console.WriteLine("2) See discontinued products");
-                Console.WriteLine("3) See active products");
+                Console.WriteLine("\n1) View all products");
+                Console.WriteLine("2) View discontinued products");
+                Console.WriteLine("3) View active products");
                 string? option = Console.ReadLine();
+                logger.Info("Option {option} selected", option);
 
                 if (option == "1")
                 {
                     var db = new DataContext();
                     var products = db.Products.OrderBy(p => p.ProductId).ToList();
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"{products.Count()} records returned");
                     foreach (var p in products)
                     {
                         if (p.Discontinued == true)
                         {
-                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($"{p.ProductName}");
                         }
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"{p.ProductName}");
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.WriteLine($"{p.ProductName}");
+                        }
                     }
                     Console.ForegroundColor = ConsoleColor.White;
                 }
@@ -197,10 +203,11 @@ do
                 {
                     var db = new DataContext();
                     var products = db.Products.Where(p => p.Discontinued == true).OrderBy(p => p.ProductId).ToList();
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"{products.Count()} records returned");
                     foreach (var p in products)
                     {
-                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"{p.ProductName}");
                     }
                     Console.ForegroundColor = ConsoleColor.White;
@@ -209,10 +216,11 @@ do
                 {
                     var db = new DataContext();
                     var products = db.Products.Where(p => p.Discontinued != true).OrderBy(p => p.ProductId).ToList();
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"{products.Count()} records returned");
                     foreach (var p in products)
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.ForegroundColor = ConsoleColor.Magenta;
                         Console.WriteLine($"{p.ProductName}");
                     }
                     Console.ForegroundColor = ConsoleColor.White;
@@ -221,6 +229,17 @@ do
             else if (choiceProduct == "4")
             {
                 // Display a specific Product (all product fields should be displayed)
+                Console.WriteLine("Enter Id of product to view: ");
+                var db = new DataContext();
+                var p = GetProduct(db, logger);
+                if (p != null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"{p.ProductName}");
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.WriteLine($"\tID: {p.ProductId}\n\tSupplierID: {p.SupplierId}\n\tCategoryID: {p.CategoryId}\n\tQuantityPerUnit: {p.QuantityPerUnit}\n\tUnitPrice: {p.UnitPrice}\n\tUnitsOnOrder: {p.UnitsOnOrder}\n\tReorderLevel: {p.ReorderLevel}\n\tDiscontinued: {p.Discontinued}");
+                }
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
     }
