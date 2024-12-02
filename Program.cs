@@ -19,10 +19,12 @@ do
     Console.WriteLine("2) Add category");
     Console.WriteLine("3) Display Category and related products");
     Console.WriteLine("4) Display all Categories and their related products");
+    Console.WriteLine("-------------------------------------");
     Console.WriteLine("5) Add new record to product");
     Console.WriteLine("6) Edit record in product");
     Console.WriteLine("7) Display all records in products");
     Console.WriteLine("8) Display specific product");
+    Console.WriteLine("-------------------------------------");
     Console.WriteLine("Enter to quit");
     string? choice = Console.ReadLine();
     Console.Clear();
@@ -122,42 +124,34 @@ do
     else if (choice == "5")
     {
         //Add new record to product
-        Product product = new();
-        Console.WriteLine("Enter Product Name:");
-        product.ProductName = Console.ReadLine()!;
 
-        ValidationContext context = new ValidationContext(product, null, null);
-        List<ValidationResult> results = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(product, context, results, true);
-        if (isValid)
+        var db = new DataContext();
+        Product? product = InputProduct(db, logger);
+        //save to db
+        if (product != null)
         {
-            var db = new DataContext();
-            // check for unique name
-            if (db.Products.Any(c => c.ProductName == product.ProductName))
-            {
-                // generate validation error
-                isValid = false;
-                results.Add(new ValidationResult("Name exists", ["ProductName"]));
-            }
-            else
-            {
-                logger.Info("Validation passed");
-                // TODO: save product to db
-                db.AddProduct(product);
-                logger.Info("Product added - {ProductName}", product.ProductName);
-            }
+            db.AddProduct(product);
+            logger.Info("Product added - {ProductName}", product.ProductName);
         }
-        if (!isValid)
-        {
-            foreach (var result in results)
-            {
-                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-            }
-        }
+
+
     }
     else if (choice == "6")
     {
-        // Edit record in product
+        // Edit specific record in product
+        Console.WriteLine("Choose the Product you want to edit:");
+        var db = new DataContext();
+        var product = GetProduct(db, logger);
+        if (product != null)
+        {
+            Product? UpdatedProduct = InputProduct(db, logger);
+            if (UpdatedProduct != null)
+            {
+                UpdatedProduct.ProductId = product.ProductId;
+                db.EditProduct(UpdatedProduct);
+                logger.Info($"Product updated to \"{product.ProductName}\"");
+            }
+        }
     }
     else if (choice == "7")
     {
@@ -175,3 +169,66 @@ do
 } while (true);
 
 logger.Info("Program ended");
+
+
+
+
+static Product? GetProduct(DataContext db, NLog.Logger logger)
+{
+    // display all products
+    var products = db.Products.OrderBy(b => b.ProductId);
+    foreach (Product p in products)
+    {
+        Console.WriteLine($"{p.ProductId}: {p.ProductName}");
+    }
+    if (int.TryParse(Console.ReadLine(), out int ProductId))
+    {
+        Product product = db.Products.FirstOrDefault(p => p.ProductId == ProductId)!;
+
+        if (product == null)
+        {
+            // if the ID doesn't exist
+            logger.Error($"ID {ProductId} does not exist.");
+        }
+        return product;
+    }
+    //if input is not a valid integer
+    logger.Error("Invalid input. Please enter a valid Product ID.");
+    return null;
+}
+
+static Product? InputProduct(DataContext db, NLog.Logger logger)
+{
+    Product product = new();
+    Console.WriteLine("Enter Product Name:");
+    product.ProductName = Console.ReadLine()!;
+
+    ValidationContext context = new ValidationContext(product, null, null);
+    List<ValidationResult> results = new List<ValidationResult>();
+    var isValid = Validator.TryValidateObject(product, context, results, true);
+    if (isValid)
+    {
+        // check for unique name
+        if (db.Products.Any(c => c.ProductName == product.ProductName))
+        {
+            // generate validation error
+            isValid = false;
+            results.Add(new ValidationResult("Name exists", ["ProductName"]));
+        }
+        else
+        {
+            logger.Info("Validation passed");
+        }
+    }
+    if (!isValid)
+    {
+        foreach (var result in results)
+        {
+            logger.Error($"{result.MemberNames.First()}: {result.ErrorMessage}");
+        }
+        return null;
+    }
+    return product;
+}
+
+

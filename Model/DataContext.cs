@@ -38,6 +38,13 @@ public partial class DataContext : DbContext
         this.SaveChanges();
     }
 
+    public void EditProduct(Product UpdatedProduct)
+    {
+        Product product = Products.Find(UpdatedProduct.ProductId)!;
+        product.ProductName = UpdatedProduct.ProductName;
+        this.SaveChanges();
+    }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
