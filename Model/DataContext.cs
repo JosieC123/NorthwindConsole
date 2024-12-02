@@ -38,6 +38,13 @@ public partial class DataContext : DbContext
         this.SaveChanges();
     }
 
+    public void AddCategory(Category category)
+    {
+        this.Categories.Add(category);
+        this.SaveChanges();
+    }
+
+
     public void EditProduct(Product UpdatedProduct)
     {
         Product product = Products.Find(UpdatedProduct.ProductId)!;

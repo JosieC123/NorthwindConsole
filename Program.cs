@@ -7,10 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 string path = Directory.GetCurrentDirectory() + "//nlog.config";
 
-// create instance of Logger
-
 var logger = LogManager.Setup().LoadConfigurationFromFile(path).GetCurrentClassLogger();
-
 logger.Info("Program started");
 
 do
@@ -32,7 +29,6 @@ do
         // display categories
         var configuration = new ConfigurationBuilder()
                 .AddJsonFile($"appsettings.json");
-
         var config = configuration.Build();
 
         var db = new DataContext();
@@ -71,8 +67,8 @@ do
             }
             else
             {
-                logger.Info("Validation passed");
-                // TODO: save category to db
+                db.AddCategory(category);
+                logger.Info("Category added - {CategoryName}", category.CategoryName);
             }
         }
         if (!isValid)
@@ -134,15 +130,11 @@ do
             logger.Info("Option {choiceProduct} selected", choiceProduct);
 
             //If presses Enter. break loop and go back to main menu
-            if (string.IsNullOrEmpty(choiceProduct))
-            {
-                break;
-            }
+            if (string.IsNullOrEmpty(choiceProduct)) { break; }
 
             if (choiceProduct == "1")
             {
                 //Add new record to product
-
                 var db = new DataContext();
                 Product? product = InputProduct(db, logger);
                 //save to db
@@ -263,6 +255,7 @@ logger.Info("Program ended");
 
 //====================================================================================
 
+//Getting the product based on id
 static Product? GetProduct(DataContext db, NLog.Logger logger)
 {
     if (int.TryParse(Console.ReadLine(), out int ProductId))
@@ -271,16 +264,14 @@ static Product? GetProduct(DataContext db, NLog.Logger logger)
 
         if (product == null)
         {
-            // if the ID doesn't exist
             logger.Error($"ID {ProductId} does not exist.");
         }
         return product;
     }
-    //if input is not a valid integer
     logger.Error("Invalid input. Please enter a valid Product ID.");
     return null;
 }
-
+//input a new product. used to add new product and edit a current product
 static Product? InputProduct(DataContext db, NLog.Logger logger, string? currentProductName = null)
 {
     Product product = new();
@@ -293,7 +284,6 @@ static Product? InputProduct(DataContext db, NLog.Logger logger, string? current
     product.UnitsOnOrder = GetNumberInput("Enter Units on Order:");
     product.ReorderLevel = GetNumberInput("Enter Reorder Level:");
     product.Discontinued = GetDiscontinue("Enter If Discontinued:");
-
 
     ValidationContext context = new ValidationContext(product, null, null);
     List<ValidationResult> results = new List<ValidationResult>();
@@ -314,7 +304,6 @@ static Product? InputProduct(DataContext db, NLog.Logger logger, string? current
                 results.Add(new ValidationResult("Product Name exists", ["ProductName"]));
             }
         }
-
     }
     if (!isValid)
     {
@@ -327,68 +316,39 @@ static Product? InputProduct(DataContext db, NLog.Logger logger, string? current
     return product;
 }
 
-
-//getting the user input
+//getting user input string, short, decimal, discontinued
 static string GetStringInput(string input)
-{
-    Console.WriteLine(input);
-    return Console.ReadLine()!;
+{ 
+    Console.WriteLine(input); return Console.ReadLine()!; 
 }
 
-//getting int user input
 static short GetNumberInput(string input, bool validate = true)
 {
     short number;
-    while (true)
-    {
+    while (true){
         Console.WriteLine(input);
         if (short.TryParse(Console.ReadLine(), out number) && (!validate || number >= 0))
-        {
-            return number;
-        }
-        else
-        {
-            Console.WriteLine("Invalid input. Please enter a valid number.");
-        }
-    }
+        { return number; }
+        else { Console.WriteLine("Invalid input. Please enter a valid number."); }}
 }
 
-//decimal input
 static decimal GetDecimalInput(string input)
 {
     decimal number;
-    while (true)
-    {
+    while (true){
         Console.WriteLine(input);
         if (decimal.TryParse(Console.ReadLine(), out number) && number >= 0)
-        {
-            return number;
-        }
-        else
-        {
-            Console.WriteLine("Invalid input. Please enter a valid decimal.");
-        }
-    }
+        { return number; }
+        else { Console.WriteLine("Invalid input. Please enter a valid decimal."); }}
 }
 
 static bool GetDiscontinue(string prompt)
 {
-    while (true)
-    {
+    while (true){
         Console.WriteLine(prompt);
         var input = Console.ReadLine()?.ToLower();
-        if (input == "true")
-        {
-            return true;
-        }
-        else if (input == "false")
-        {
-            return false;
-        }
-        else
-        {
-            Console.WriteLine("Invalid input. Please enter 'true' or 'false'.");
-        }
-    }
+        if (input == "true") { return true; }
+        else if (input == "false") { return false; }
+        else { Console.WriteLine("Invalid input. Please enter 'true' or 'false'."); }}
 }
 
