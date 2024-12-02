@@ -157,15 +157,21 @@ do
                 // Edit specific record in product
                 Console.WriteLine("Enter ID of Product you want to edit:");
                 var db = new DataContext();
-                var product = GetProduct(db, logger);
-                if (product != null)
+                var p = GetProduct(db, logger);
+                if (p != null)
                 {
-                    Product? UpdatedProduct = InputProduct(db, logger);
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Current Record:\n{p.ProductName}");
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.WriteLine($"\tID: {p.ProductId}\n\tSupplierID: {p.SupplierId}\n\tCategoryID: {p.CategoryId}\n\tQuantityPerUnit: {p.QuantityPerUnit}\n\tUnitPrice: {p.UnitPrice}\n\tUnitsInStock: {p.UnitsInStock}\n\tUnitsOnOrder: {p.UnitsOnOrder}\n\tReorderLevel: {p.ReorderLevel}\n\tDiscontinued: {p.Discontinued}");
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    Product? UpdatedProduct = InputProduct(db, logger, p.ProductName);
                     if (UpdatedProduct != null)
                     {
-                        UpdatedProduct.ProductId = product.ProductId;
+                        UpdatedProduct.ProductId = p.ProductId;
                         db.EditProduct(UpdatedProduct);
-                        logger.Info($"Product updated to \"{product.ProductName}\"");
+                        logger.Info($"Record successfully updated, \"{p.ProductName}\"");
                     }
                 }
             }
@@ -275,24 +281,40 @@ static Product? GetProduct(DataContext db, NLog.Logger logger)
     return null;
 }
 
-static Product? InputProduct(DataContext db, NLog.Logger logger)
+static Product? InputProduct(DataContext db, NLog.Logger logger, string? currentProductName = null)
 {
     Product product = new();
-    Console.WriteLine("Enter Product Name:");
-    product.ProductName = Console.ReadLine()!;
+    product.ProductName = GetStringInput("Enter Product Name:");
+    product.SupplierId = GetNumberInput("Enter Supplier ID:");
+    product.CategoryId = GetNumberInput("Enter Category ID:");
+    product.QuantityPerUnit = GetStringInput("Enter Quantity per Unit:");
+    product.UnitPrice = GetDecimalInput("Enter Unit Price:");
+    product.UnitsInStock = GetNumberInput("Enter Units in Stock:");
+    product.UnitsOnOrder = GetNumberInput("Enter Units on Order:");
+    product.ReorderLevel = GetNumberInput("Enter Reorder Level:");
+    product.Discontinued = GetDiscontinue("Enter If Discontinued:");
+
 
     ValidationContext context = new ValidationContext(product, null, null);
     List<ValidationResult> results = new List<ValidationResult>();
     var isValid = Validator.TryValidateObject(product, context, results, true);
     if (isValid)
     {
-        // check for unique name
-        if (db.Products.Any(p => p.ProductName == product.ProductName))
+        if (currentProductName != null && product.ProductName == currentProductName)
         {
-            // generate validation error
-            isValid = false;
-            results.Add(new ValidationResult("Name exists", ["ProductName"]));
+            logger.Info($"Record successfully updated");
         }
+        else
+        {
+            // check for unique name
+            if (db.Products.Any(p => p.ProductName == product.ProductName))
+            {
+                // generate validation error
+                isValid = false;
+                results.Add(new ValidationResult("Product Name exists", ["ProductName"]));
+            }
+        }
+
     }
     if (!isValid)
     {
@@ -305,4 +327,68 @@ static Product? InputProduct(DataContext db, NLog.Logger logger)
     return product;
 }
 
+
+//getting the user input
+static string GetStringInput(string input)
+{
+    Console.WriteLine(input);
+    return Console.ReadLine()!;
+}
+
+//getting int user input
+static short GetNumberInput(string input, bool validate = true)
+{
+    short number;
+    while (true)
+    {
+        Console.WriteLine(input);
+        if (short.TryParse(Console.ReadLine(), out number) && (!validate || number >= 0))
+        {
+            return number;
+        }
+        else
+        {
+            Console.WriteLine("Invalid input. Please enter a valid number.");
+        }
+    }
+}
+
+//decimal input
+static decimal GetDecimalInput(string input)
+{
+    decimal number;
+    while (true)
+    {
+        Console.WriteLine(input);
+        if (decimal.TryParse(Console.ReadLine(), out number) && number >= 0)
+        {
+            return number;
+        }
+        else
+        {
+            Console.WriteLine("Invalid input. Please enter a valid decimal.");
+        }
+    }
+}
+
+static bool GetDiscontinue(string prompt)
+{
+    while (true)
+    {
+        Console.WriteLine(prompt);
+        var input = Console.ReadLine()?.ToLower();
+        if (input == "true")
+        {
+            return true;
+        }
+        else if (input == "false")
+        {
+            return false;
+        }
+        else
+        {
+            Console.WriteLine("Invalid input. Please enter 'true' or 'false'.");
+        }
+    }
+}
 

@@ -42,6 +42,14 @@ public partial class DataContext : DbContext
     {
         Product product = Products.Find(UpdatedProduct.ProductId)!;
         product.ProductName = UpdatedProduct.ProductName;
+        product.SupplierId = UpdatedProduct.SupplierId;
+        product.CategoryId = UpdatedProduct.CategoryId;
+        product.QuantityPerUnit = UpdatedProduct.QuantityPerUnit;
+        product.UnitPrice = UpdatedProduct.UnitPrice;
+        product.UnitsInStock = UpdatedProduct.UnitsInStock;
+        product.UnitsOnOrder = UpdatedProduct.UnitsOnOrder;
+        product.ReorderLevel = UpdatedProduct.ReorderLevel;
+        product.Discontinued = UpdatedProduct.Discontinued;
         this.SaveChanges();
     }
 
