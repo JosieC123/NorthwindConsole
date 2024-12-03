@@ -17,7 +17,8 @@ do
     Console.WriteLine("2) Add category");
     Console.WriteLine("3) Display Category and related products");
     Console.WriteLine("4) Display all Categories and their related products");
-    Console.WriteLine("5) Options for Product Table");
+    Console.WriteLine("5) Edit record in categories table");
+    Console.WriteLine("6) Options for Product Table");
     Console.WriteLine("===================");
     Console.WriteLine("Enter to quit");
     string? choice = Console.ReadLine();
@@ -115,6 +116,10 @@ do
         }
     }
     else if (choice == "5")
+    {
+        //Edit a specified record from the Categories table 
+    }
+    else if (choice == "6")
     {
         while (true)
         {
@@ -250,11 +255,7 @@ do
 
 logger.Info("Program ended");
 
-
-
-
 //====================================================================================
-
 //Getting the product based on id
 static Product? GetProduct(DataContext db, NLog.Logger logger)
 {
@@ -315,40 +316,44 @@ static Product? InputProduct(DataContext db, NLog.Logger logger, string? current
     }
     return product;
 }
-
 //getting user input string, short, decimal, discontinued
 static string GetStringInput(string input)
-{ 
-    Console.WriteLine(input); return Console.ReadLine()!; 
+{
+    Console.WriteLine(input); return Console.ReadLine()!;
 }
 
 static short GetNumberInput(string input, bool validate = true)
 {
     short number;
-    while (true){
+    while (true)
+    {
         Console.WriteLine(input);
         if (short.TryParse(Console.ReadLine(), out number) && (!validate || number >= 0))
         { return number; }
-        else { Console.WriteLine("Invalid input. Please enter a valid number."); }}
+        else { Console.WriteLine("Invalid input. Please enter a valid number."); }
+    }
 }
 
 static decimal GetDecimalInput(string input)
 {
     decimal number;
-    while (true){
+    while (true)
+    {
         Console.WriteLine(input);
         if (decimal.TryParse(Console.ReadLine(), out number) && number >= 0)
         { return number; }
-        else { Console.WriteLine("Invalid input. Please enter a valid decimal."); }}
+        else { Console.WriteLine("Invalid input. Please enter a valid decimal."); }
+    }
 }
 
 static bool GetDiscontinue(string prompt)
 {
-    while (true){
+    while (true)
+    {
         Console.WriteLine(prompt);
         var input = Console.ReadLine()?.ToLower();
         if (input == "true") { return true; }
         else if (input == "false") { return false; }
-        else { Console.WriteLine("Invalid input. Please enter 'true' or 'false'."); }}
+        else { Console.WriteLine("Invalid input. Please enter 'true' or 'false'."); }
+    }
 }
-
