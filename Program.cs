@@ -118,6 +118,30 @@ do
     else if (choice == "5")
     {
         //Edit a specified record from the Categories table 
+        var db = new DataContext();
+        var query = db.Categories.OrderBy(c => c.CategoryId);
+        Console.ForegroundColor = ConsoleColor.Red;
+        foreach (var category in query)
+        {
+            Console.WriteLine($"{category.CategoryId}) {category.CategoryName}");
+        }
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine("Enter ID of Category you want to edit:");
+        var c = GetCategory(db, logger);
+        if (c != null)
+        {
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine($"Current Record:\n{c.CategoryName} - {c.Description}");
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Category? UpdatedCategory = InputCategory(db, logger);
+            if (UpdatedCategory != null)
+            {
+                UpdatedCategory.CategoryId = c.CategoryId;
+                db.EditCategory(UpdatedCategory);
+                logger.Info($"Record successfully updated, \"{c.CategoryName}\"");
+            }
+        }
     }
     else if (choice == "6")
     {
@@ -163,7 +187,7 @@ do
                     Console.WriteLine($"\tID: {p.ProductId}\n\tSupplierID: {p.SupplierId}\n\tCategoryID: {p.CategoryId}\n\tQuantityPerUnit: {p.QuantityPerUnit}\n\tUnitPrice: {p.UnitPrice}\n\tUnitsInStock: {p.UnitsInStock}\n\tUnitsOnOrder: {p.UnitsOnOrder}\n\tReorderLevel: {p.ReorderLevel}\n\tDiscontinued: {p.Discontinued}");
                     Console.ForegroundColor = ConsoleColor.White;
 
-                    Product? UpdatedProduct = InputProduct(db, logger, p.ProductName);
+                    Product? UpdatedProduct = InputProduct(db, logger);
                     if (UpdatedProduct != null)
                     {
                         UpdatedProduct.ProductId = p.ProductId;
@@ -273,7 +297,7 @@ static Product? GetProduct(DataContext db, NLog.Logger logger)
     return null;
 }
 //input a new product. used to add new product and edit a current product
-static Product? InputProduct(DataContext db, NLog.Logger logger, string? currentProductName = null)
+static Product? InputProduct(DataContext db, NLog.Logger logger)
 {
     Product product = new();
     product.ProductName = GetStringInput("Enter Product Name:");
@@ -291,19 +315,12 @@ static Product? InputProduct(DataContext db, NLog.Logger logger, string? current
     var isValid = Validator.TryValidateObject(product, context, results, true);
     if (isValid)
     {
-        if (currentProductName != null && product.ProductName == currentProductName)
+        // check for unique name
+        if (db.Products.Any(p => p.ProductName == product.ProductName))
         {
-            logger.Info($"Record successfully updated");
-        }
-        else
-        {
-            // check for unique name
-            if (db.Products.Any(p => p.ProductName == product.ProductName))
-            {
-                // generate validation error
-                isValid = false;
-                results.Add(new ValidationResult("Product Name exists", ["ProductName"]));
-            }
+            // generate validation error
+            isValid = false;
+            results.Add(new ValidationResult("Product Name exists", ["ProductName"]));
         }
     }
     if (!isValid)
@@ -315,6 +332,51 @@ static Product? InputProduct(DataContext db, NLog.Logger logger, string? current
         return null;
     }
     return product;
+}
+
+//Getting the category based on id
+static Category? GetCategory(DataContext db, NLog.Logger logger)
+{
+    if (int.TryParse(Console.ReadLine(), out int CategoryId))
+    {
+        Category category = db.Categories.FirstOrDefault(c => c.CategoryId == CategoryId)!;
+
+        if (category == null)
+        {
+            logger.Error($"ID {CategoryId} does not exist.");
+        }
+        return category;
+    }
+    logger.Error("Invalid input. Please enter a valid Category ID.");
+    return null;
+}
+//input a new category
+static Category? InputCategory(DataContext db, NLog.Logger logger)
+{
+    Category category = new();
+    category.CategoryName = GetStringInput("Enter Category Name:");
+    category.Description = GetStringInput("Enter Description:");
+
+    ValidationContext context = new ValidationContext(category, null, null);
+    List<ValidationResult> results = new List<ValidationResult>();
+    var isValid = Validator.TryValidateObject(category, context, results, true);
+    if (isValid)
+    {
+        if (db.Categories.Any(c => c.CategoryName == category.CategoryName))
+        {
+            isValid = false;
+            results.Add(new ValidationResult("Category Name exists", ["CategoryName"]));
+        }
+    }
+    if (!isValid)
+    {
+        foreach (var result in results)
+        {
+            logger.Error($"{result.MemberNames.First()}: {result.ErrorMessage}");
+        }
+        return null;
+    }
+    return category;
 }
 //getting user input string, short, decimal, discontinued
 static string GetStringInput(string input)
