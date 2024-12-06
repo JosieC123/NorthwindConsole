@@ -85,7 +85,7 @@ do
         var db = new DataContext();
         var query = db.Categories.OrderBy(p => p.CategoryId);
         Console.WriteLine("Select the category whose products you want to display:");
-        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.ForegroundColor = ConsoleColor.Magenta;
         foreach (var item in query)
         {
             Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
@@ -96,21 +96,28 @@ do
         logger.Info($"CategoryId {input} selected");
         if (!int.TryParse(input, out int id))
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             logger.Error($"Invalid input: '{input}' is not a valid number.");
+            Console.ForegroundColor = ConsoleColor.White;
             continue;
         }
 
         Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
         if (category == null)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             logger.Info($"Category does not exist.");
+            Console.ForegroundColor = ConsoleColor.White;
             continue;
         }
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"{category.CategoryName} - {category.Description}");
+        Console.ForegroundColor = ConsoleColor.Magenta;
         foreach (Product p in category.Products.Where(p => p.Discontinued != true))
         {
             Console.WriteLine($"\t{p.ProductName}");
         }
+        Console.ForegroundColor = ConsoleColor.White;
     }
 
     else if (choice == "4")
@@ -119,11 +126,14 @@ do
         var query = db.Categories.Include("Products").OrderBy(p => p.CategoryId);
         foreach (var item in query)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"{item.CategoryName}");
+            Console.ForegroundColor = ConsoleColor.Magenta;
             foreach (Product p in item.Products.Where(p => p.Discontinued != true))
             {
                 Console.WriteLine($"\t{p.ProductName}");
             }
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     else if (choice == "5")
@@ -131,7 +141,7 @@ do
         //Edit a specified record from the Categories table 
         var db = new DataContext();
         var query = db.Categories.OrderBy(c => c.CategoryId);
-        Console.ForegroundColor = ConsoleColor.Red;
+        Console.ForegroundColor = ConsoleColor.Magenta;
         foreach (var category in query)
         {
             Console.WriteLine($"{category.CategoryId}) {category.CategoryName}");
@@ -142,7 +152,7 @@ do
         if (c != null)
         {
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine($"Current Record:\n{c.CategoryName} - {c.Description}");
+            Console.WriteLine($"Current Category:\n{c.CategoryName} - {c.Description}");
             Console.ForegroundColor = ConsoleColor.White;
 
             Category? UpdatedCategory = InputCategory(db, logger);
@@ -150,7 +160,9 @@ do
             {
                 UpdatedCategory.CategoryId = c.CategoryId;
                 db.EditCategory(UpdatedCategory);
+                Console.ForegroundColor = ConsoleColor.Green;
                 logger.Info($"Record successfully updated, \"{c.CategoryName}\"");
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
     }
@@ -181,7 +193,9 @@ do
                 if (product != null)
                 {
                     db.AddProduct(product);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     logger.Info("Product added - {ProductName}", product.ProductName);
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
             }
             else if (choiceProduct == "2")
@@ -203,7 +217,9 @@ do
                     {
                         UpdatedProduct.ProductId = p.ProductId;
                         db.EditProduct(UpdatedProduct);
+                        Console.ForegroundColor = ConsoleColor.Green;
                         logger.Info($"Record successfully updated, \"{p.ProductName}\"");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
             }
@@ -300,11 +316,15 @@ static Product? GetProduct(DataContext db, NLog.Logger logger)
 
         if (product == null)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             logger.Error($"ID {ProductId} does not exist.");
+            Console.ForegroundColor = ConsoleColor.White;
         }
         return product;
     }
+    Console.ForegroundColor = ConsoleColor.DarkRed;
     logger.Error("Please enter a valid Product ID.");
+    Console.ForegroundColor = ConsoleColor.White;
     return null;
 }
 //input a new product. used to add new product and edit a current product
@@ -331,7 +351,9 @@ static Product? InputProduct(DataContext db, NLog.Logger logger)
         {
             // generate validation error
             isValid = false;
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             results.Add(new ValidationResult("Product Name exists", ["ProductName"]));
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     if (isValid)
@@ -339,7 +361,9 @@ static Product? InputProduct(DataContext db, NLog.Logger logger)
         if (!db.Suppliers.Any(s => s.SupplierId == product.SupplierId))
         {
             isValid = false;
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             results.Add(new ValidationResult("Supplier ID does not exist", ["SupplierId"]));
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     if (isValid)
@@ -347,14 +371,18 @@ static Product? InputProduct(DataContext db, NLog.Logger logger)
         if (!db.Categories.Any(c => c.CategoryId == product.CategoryId))
         {
             isValid = false;
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             results.Add(new ValidationResult("Category ID does not exist", ["CategoryId"]));
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     if (!isValid)
     {
         foreach (var result in results)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             logger.Error($"{result.MemberNames.First()}: {result.ErrorMessage}");
+            Console.ForegroundColor = ConsoleColor.White;
         }
         return null;
     }
@@ -370,11 +398,15 @@ static Category? GetCategory(DataContext db, NLog.Logger logger)
 
         if (category == null)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             logger.Error($"ID {CategoryId} does not exist.");
+            Console.ForegroundColor = ConsoleColor.White;
         }
         return category;
     }
+    Console.ForegroundColor = ConsoleColor.DarkRed;
     logger.Error("Please enter a valid Category ID.");
+    Console.ForegroundColor = ConsoleColor.White;
     return null;
 }
 //input a new category
@@ -392,14 +424,18 @@ static Category? InputCategory(DataContext db, NLog.Logger logger)
         if (db.Categories.Any(c => c.CategoryName == category.CategoryName))
         {
             isValid = false;
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             results.Add(new ValidationResult("Category Name exists", ["CategoryName"]));
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     if (!isValid)
     {
         foreach (var result in results)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             logger.Error($"{result.MemberNames.First()}: {result.ErrorMessage}");
+            Console.ForegroundColor = ConsoleColor.White;
         }
         return null;
     }
