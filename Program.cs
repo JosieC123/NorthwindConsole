@@ -68,35 +68,21 @@ do
             Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
         }
         Console.ForegroundColor = ConsoleColor.White;
-        string input = Console.ReadLine()!;
-        Console.Clear();
-        logger.Info($"CategoryId {input} selected");
-        if (!int.TryParse(input, out int id))
-        {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            logger.Error($"Invalid input: '{input}' is not a valid number.");
-            Console.ForegroundColor = ConsoleColor.White;
-            continue;
-        }
 
-        Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
-        if (category == null)
+        var c = GetCategory(db, logger);
+        if (c != null)
         {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            logger.Info($"Category does not exist.");
+        Category category = db.Categories.Include(c => c.Products).FirstOrDefault(c => c.CategoryId == c.CategoryId)!;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{category.CategoryName} - {category.Description}");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            foreach (Product p in category.Products.Where(p => p.Discontinued != true))
+            {
+                Console.WriteLine($"\t{p.ProductName}");
+            }
             Console.ForegroundColor = ConsoleColor.White;
-            continue;
         }
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"{category.CategoryName} - {category.Description}");
-        Console.ForegroundColor = ConsoleColor.Magenta;
-        foreach (Product p in category.Products.Where(p => p.Discontinued != true))
-        {
-            Console.WriteLine($"\t{p.ProductName}");
-        }
-        Console.ForegroundColor = ConsoleColor.White;
     }
-
     else if (choice == "4")
     {
         var db = new DataContext();
