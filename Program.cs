@@ -47,37 +47,14 @@ do
     else if (choice == "2")
     {
         // Add category
-        Category category = new();
-        Console.WriteLine("Enter Category Name:");
-        category.CategoryName = Console.ReadLine()!;
-        Console.WriteLine("Enter the Category Description:");
-        category.Description = Console.ReadLine();
-
-        ValidationContext context = new ValidationContext(category, null, null);
-        List<ValidationResult> results = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(category, context, results, true);
-        if (isValid)
+        var db = new DataContext();
+        Category? category = InputCategory(db, logger);
+        if (category != null)
         {
-            var db = new DataContext();
-            // check for unique name
-            if (db.Categories.Any(c => c.CategoryName == category.CategoryName))
-            {
-                // generate validation error
-                isValid = false;
-                results.Add(new ValidationResult("Name exists", ["CategoryName"]));
-            }
-            else
-            {
-                db.AddCategory(category);
-                logger.Info("Category added - {CategoryName}", category.CategoryName);
-            }
-        }
-        if (!isValid)
-        {
-            foreach (var result in results)
-            {
-                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-            }
+            db.AddCategory(category);
+            Console.ForegroundColor = ConsoleColor.Green;
+            logger.Info("Category added - {CategoryName}", category.CategoryName);
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     else if (choice == "3")
