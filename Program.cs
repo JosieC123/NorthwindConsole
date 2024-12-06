@@ -91,17 +91,28 @@ do
             Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
         }
         Console.ForegroundColor = ConsoleColor.White;
-        int id = int.Parse(Console.ReadLine()!);
+        string input = Console.ReadLine()!;
         Console.Clear();
-        logger.Info($"CategoryId {id} selected");
+        logger.Info($"CategoryId {input} selected");
+        if (!int.TryParse(input, out int id))
+        {
+            logger.Error($"Invalid input: '{input}' is not a valid number.");
+            continue;
+        }
 
         Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
+        if (category == null)
+        {
+            logger.Info($"Category does not exist.");
+            continue;
+        }
         Console.WriteLine($"{category.CategoryName} - {category.Description}");
         foreach (Product p in category.Products.Where(p => p.Discontinued != true))
         {
             Console.WriteLine($"\t{p.ProductName}");
         }
     }
+
     else if (choice == "4")
     {
         var db = new DataContext();
@@ -293,7 +304,7 @@ static Product? GetProduct(DataContext db, NLog.Logger logger)
         }
         return product;
     }
-    logger.Error("Invalid input. Please enter a valid Product ID.");
+    logger.Error("Please enter a valid Product ID.");
     return null;
 }
 //input a new product. used to add new product and edit a current product
@@ -323,6 +334,22 @@ static Product? InputProduct(DataContext db, NLog.Logger logger)
             results.Add(new ValidationResult("Product Name exists", ["ProductName"]));
         }
     }
+    if (isValid)
+    {
+        if (!db.Suppliers.Any(s => s.SupplierId == product.SupplierId))
+        {
+            isValid = false;
+            results.Add(new ValidationResult("Supplier ID does not exist", ["SupplierId"]));
+        }
+    }
+    if (isValid)
+    {
+        if (!db.Categories.Any(c => c.CategoryId == product.CategoryId))
+        {
+            isValid = false;
+            results.Add(new ValidationResult("Category ID does not exist", ["CategoryId"]));
+        }
+    }
     if (!isValid)
     {
         foreach (var result in results)
@@ -347,7 +374,7 @@ static Category? GetCategory(DataContext db, NLog.Logger logger)
         }
         return category;
     }
-    logger.Error("Invalid input. Please enter a valid Category ID.");
+    logger.Error("Please enter a valid Category ID.");
     return null;
 }
 //input a new category

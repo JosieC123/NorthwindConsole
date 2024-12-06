@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace NorthwindConsole.Model;
 
 public partial class Product
 {
     public int ProductId { get; set; }
+    [Required(ErrorMessage = "Must enter Product name.")]
+
 
     public string ProductName { get; set; } = null!;
 
