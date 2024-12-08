@@ -286,6 +286,20 @@ do
     else if (choice == "8")
     {
         //Delete a specified existing record from the Categories table (account for Orphans in related tables)
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.WriteLine("Warning: This will remove any product records in related tables.");
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine("Enter Id of Category to delete:");
+        var db = new DataContext();
+        var categories = db.Categories.OrderBy(c => c.CategoryId).ToList();
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.ForegroundColor = ConsoleColor.White;
+        var category = GetCategory(db, logger);
+        if (category != null)
+        {
+            db.DeleteCategory(category);
+            logger.Info($"Category {category.CategoryName} deleted");
+        }
     }
     else if (String.IsNullOrEmpty(choice))
     {

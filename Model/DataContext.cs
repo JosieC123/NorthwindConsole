@@ -80,6 +80,17 @@ public void DeleteProduct(Product product)
     this.SaveChanges();
 }
 
+public void DeleteCategory(Category category){
+    //categories in products
+    var relatedProducts = this.Products.Where(p => p.CategoryId == category.CategoryId).ToList();
+    foreach (var product in relatedProducts){
+        this.Products.Remove(product);
+    }
+    //delete category
+    this.Categories.Remove(category);
+    this.SaveChanges();
+}
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
