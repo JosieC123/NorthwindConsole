@@ -59,12 +59,26 @@ public partial class DataContext : DbContext
         this.SaveChanges();
     }
 
-    public void EditCategory(Category UpdatedCategory){
+    public void EditCategory(Category UpdatedCategory)
+    {
         Category category = Categories.Find(UpdatedCategory.CategoryId)!;
         category.CategoryName = UpdatedCategory.CategoryName;
         category.Description = UpdatedCategory.Description;
         this.SaveChanges();
     }
+
+public void DeleteProduct(Product product)
+{
+    // products in OrderDetails
+    var relatedOrderDetails = this.OrderDetails.Where(od => od.ProductId == product.ProductId).ToList();
+    foreach (var orderDetail in relatedOrderDetails)
+    {
+        this.OrderDetails.Remove(orderDetail);
+    }
+    //delete the product
+    this.Products.Remove(product);
+    this.SaveChanges();
+}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

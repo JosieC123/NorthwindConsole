@@ -19,6 +19,8 @@ do
     Console.WriteLine("4) Display all Categories and their related products");
     Console.WriteLine("5) Edit record in categories table");
     Console.WriteLine("6) Options for Product Table");
+    Console.WriteLine("7) Delete from Products Table");
+    Console.WriteLine("8) Delete from Category Table");
     Console.WriteLine("===================");
     Console.WriteLine("Enter to quit");
     string? choice = Console.ReadLine();
@@ -68,19 +70,22 @@ do
             Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
         }
         Console.ForegroundColor = ConsoleColor.White;
-
         var c = GetCategory(db, logger);
+
         if (c != null)
         {
-        Category category = db.Categories.Include(c => c.Products).FirstOrDefault(c => c.CategoryId == c.CategoryId)!;
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"{category.CategoryName} - {category.Description}");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            foreach (Product p in category.Products.Where(p => p.Discontinued != true))
+            Category? category = db.Categories.Include(c => c.Products).FirstOrDefault(dbCategory => dbCategory.CategoryId == c.CategoryId);
+            if (category != null)
             {
-                Console.WriteLine($"\t{p.ProductName}");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"{category.CategoryName} - {category.Description}");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                foreach (Product p in category.Products.Where(p => p.Discontinued != true))
+                {
+                    Console.WriteLine($"\t{p.ProductName}");
+                }
+                Console.ForegroundColor = ConsoleColor.White;
             }
-            Console.ForegroundColor = ConsoleColor.White;
         }
     }
     else if (choice == "4")
@@ -259,6 +264,28 @@ do
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
+    }
+    else if (choice == "7")
+    {
+        //Delete a specified existing record from the Products table (account for Orphans in related tables)
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        Console.WriteLine("Warning: This will remove any records in related tables.");
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine("Enter Id of product to delete:");
+        var db = new DataContext();
+        var products = db.Products.OrderBy(p => p.ProductId).ToList();
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.ForegroundColor = ConsoleColor.White;
+        var product = GetProduct(db, logger);
+        if (product != null)
+        {
+            db.DeleteProduct(product);
+            logger.Info($"Product {product.ProductName} deleted");
+        }
+    }
+    else if (choice == "8")
+    {
+        //Delete a specified existing record from the Categories table (account for Orphans in related tables)
     }
     else if (String.IsNullOrEmpty(choice))
     {
