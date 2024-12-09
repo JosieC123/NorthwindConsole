@@ -56,7 +56,7 @@ do
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 foreach (var item in query)
                 {
-                    Console.WriteLine($"{item.CategoryId} {item.CategoryName} - {item.Description}");
+                    Console.WriteLine($"{item.CategoryName} - {item.Description}");
                 }
                 Console.ForegroundColor = ConsoleColor.White;
             }
